@@ -10,8 +10,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
@@ -39,26 +39,33 @@ internal class SmartFileDownloader : FileDownloader {
 
     private fun downloadAndTranscode(downloadRequest: DownloadRequest): Flow<DownloadPromise> {
         // implement your downloading here :)
-        return channelFlow {
-            this.send(downloadRequest.user.getType())
+        return flow {
+            emit(downloadRequest.user.getType())
+        }.catch {
+            this.emit(VideoType.Unknown)
         }.flatMapLatest { type ->
-             // fake it here!
-            flowOf(
-                DownloadPromise(
-                    downloadedPath = "",
-                    exception = null,
-                    progress = -1,
-                    videoType = type,
-                    isDownloadComplete = false
-                ),
-                DownloadPromise(
-                    downloadedPath = "",
-                    exception = null,
-                    progress = 100,
-                    videoType = type,
-                    isDownloadComplete = true
-                ),
-            )
+            // fake it here!
+            if (type == VideoType.Unknown) {
+                throw UnknownVideoException()
+            } else {
+                flowOf(
+                    DownloadPromise(
+                        downloadedPath = "",
+                        exception = null,
+                        progress = -1,
+                        videoType = type,
+                        isDownloadComplete = false
+                    ),
+                    DownloadPromise(
+                        downloadedPath = "",
+                        exception = null,
+                        progress = 100,
+                        videoType = type,
+                        isDownloadComplete = true
+                    ),
+                )
+            }
+
         }
     }
 

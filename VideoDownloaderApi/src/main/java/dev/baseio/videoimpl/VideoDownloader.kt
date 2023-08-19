@@ -12,10 +12,13 @@ data class DownloadRequest(
     val fileUrl: String,
 )
 
+class UnknownVideoException : Throwable()
+
 sealed class VideoType {
     object FourK : VideoType()
     object P1080 : VideoType()
     object P720 : VideoType()
+    object Unknown : VideoType()
 }
 
 data class DownloadPromise(
