@@ -22,6 +22,6 @@ fun main() = runBlocking {
                 downloader.cancel(request)
             }
         }
-        println("downloading finidhed....")
+        println("downloading finished....")
     }
 }

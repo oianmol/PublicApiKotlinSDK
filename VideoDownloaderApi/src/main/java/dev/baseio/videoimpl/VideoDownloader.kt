@@ -2,7 +2,6 @@ package dev.baseio.videoimpl
 
 interface VideoDownloader {
     fun download(downloadRequest: DownloadRequest, receive: (DownloadPromise) -> Unit)
-
     fun cancelAllDownloads()
     fun isDownloading(request: DownloadRequest): Boolean
     fun cancel(request: DownloadRequest)

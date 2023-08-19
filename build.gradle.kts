@@ -13,8 +13,10 @@ repositories {
 }
 
 dependencies {
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    api(fileTree(mapOf("dir" to "libs", "include" to listOf("api.jar"))))
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("apiimpl.jar"))))
     testImplementation(kotlin("test"))
-    implementation(project(":videodownloaderimpl"))
 }
 
 tasks.test {
