@@ -1,10 +1,11 @@
 package dev.baseio.videoimpl
 
-import kotlinx.coroutines.flow.Flow
-
 interface VideoDownloader {
-    fun download(downloadRequest: DownloadRequest): Flow<DownloadPromise>
+    fun download(downloadRequest: DownloadRequest, receive: (DownloadPromise) -> Unit)
+
     fun cancelAllDownloads()
+    fun isDownloading(request: DownloadRequest): Boolean
+    fun cancel(request: DownloadRequest)
 }
 
 data class DownloadRequest(

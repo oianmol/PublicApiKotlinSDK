@@ -7,8 +7,8 @@ import dev.baseio.videoimpl.VideoType.P1080
 import dev.baseio.videoimpl.VideoType.P720
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -20,7 +20,7 @@ interface FileDownloader {
     fun downloadFile(
         coroutineScope: CoroutineScope,
         downloadRequest: DownloadRequest,
-        downloadPromiseFlow: MutableSharedFlow<DownloadPromise>
+        receive: (DownloadPromise) -> Unit
     )
 }
 
@@ -28,12 +28,12 @@ internal class SmartFileDownloader : FileDownloader {
     override fun downloadFile(
         coroutineScope: CoroutineScope,
         downloadRequest: DownloadRequest,
-        downloadPromiseFlow: MutableSharedFlow<DownloadPromise>
+        receive: (DownloadPromise) -> Unit
     ) {
         downloadAndTranscode(downloadRequest).mapLatest {
-            downloadPromiseFlow.emit(it)
+            receive(it)
         }.catch {
-            downloadPromiseFlow.emit(DownloadPromise(exception = it))
+            receive(DownloadPromise(exception = it))
         }.launchIn(coroutineScope)
     }
 
@@ -71,12 +71,17 @@ internal class SmartFileDownloader : FileDownloader {
 
 }
 
-private fun String.getType(): VideoType {
+private suspend fun String.getType(): VideoType {
     // maybe fetch the user about the download type from the remote call 
     return when (this) {
         "1" -> FourK
         "2" -> P1080
         "3" -> P720
+        "test" -> {
+            delay(10000) // delay for 10 seconds :D
+            P720
+        }
+
         else -> throw Exception("cannot download url not available!")
     }
 }

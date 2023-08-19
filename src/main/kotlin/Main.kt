@@ -1,8 +1,6 @@
 import dev.baseio.videoimpl.DownloadRequest
 import dev.baseio.videoimpl.VideoDownloader
 import dev.baseio.videoimpl.VideoDownloaderProvider
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 fun main() = runBlocking {
@@ -10,21 +8,20 @@ fun main() = runBlocking {
     // downloader as ExpertVideoDownloader // fails since ExpertVideoDownloader is not visible
     with(downloader) {
         val request = DownloadRequest(
-            user = "5", // change user to see how the flow fails
+            user = "1", // change user to see how the flow fails
             fileUrl = "https://netflix.com/file.mp4"
         )
-        val flow = download(downloadRequest = request)
-        this@runBlocking.launch {
-            flow.collect {
+        download(downloadRequest = request,
+            receive = {
                 println(it)
-                if (it.isDownloadComplete) {
-                    cancel()
-                }
-                it.exception?.let { throwable ->
-                    println(throwable)
-                    cancel()
-                }
+            })
+        val downloadStartTime = System.currentTimeMillis()
+        while (downloader.isDownloading(request)) {
+            println("downloading....")
+            if (System.currentTimeMillis().minus(downloadStartTime) > 5000) { // more than 5 seconds
+                downloader.cancel(request)
             }
-        }.join()
+        }
+        println("downloading finidhed....")
     }
 }
